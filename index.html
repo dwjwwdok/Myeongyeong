@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冥影</title>
+
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/main.css">
+
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="https://jhammann.github.io/sakura/dist/sakura.css">
+
+
+</head>
+<body>
+
+    <div id="wrap">
+
+        <div id="sakura-petals"></div>
+            <script src="https://jhammann.github.io/sakura/dist/sakura.js"></script>
+            <script>
+                var sakura = new Sakura('#sakura-petals');
+
+                var sakura = new Sakura('body', {
+                    colors: [
+                        {
+                            gradientColorStart: 'rgba(31, 35, 188, 0.9)',
+                            gradientColorEnd: 'rgba(31, 35, 188, 0.9)',
+                            gradientColorDegree: 120,
+                        },
+                        {
+                            gradientColorStart: 'rgba(31, 35, 188)',
+                            gradientColorEnd: 'rgba(31, 35, 188)',
+                            gradientColorDegree: 120,
+                        },
+                        {
+                            gradientColorStart: 'rgba(31, 35, 188)',
+                            gradientColorEnd: 'rgba(31, 35, 188)',
+                            gradientColorDegree: 120,
+                        },
+                    ],
+                });
+            </script>
+        
+        <section id="section_B">
+
+            <!-- <canvas id="canvas"></canvas>
+            <script>
+                "use strict";
+                /* Typescript transfomration based on https://codepen.io/giana/details/qbWNYy */
+                function MyRandom(max, min = 0) {
+                    return Math.floor(Math.random() * (max - min + 1)) + min;
+                }
+                class Orbit {
+                    constructor(width, height) {
+                        this.cords = { x: 0, y: 0 };
+                        this.radius = MyRandom(this.MaxOrbit(width, height));
+                        this.cords.x = width / 2;
+                        this.cords.y = height / 2;
+                    }
+                    MaxOrbit(x, y) {
+                        return Math.round(Math.sqrt(2 * Math.pow(Math.max(x, y), 2)) / 2);
+                    }
+                }
+                class Star {
+                    constructor(canvasWidth, canvasHeigh, totalCount, speedFactor) {
+                        this.orbit = new Orbit(canvasWidth, canvasHeigh);
+                        this.radius = MyRandom(60, this.orbit.radius) / 12;
+                        this.timePassed = MyRandom(0, totalCount);
+                        this.speed = MyRandom(this.orbit.radius) / speedFactor;
+                        this.alpha = MyRandom(2, 10) / 10;
+                        let spark = MyRandom(10);
+                        if (spark === 1 && this.alpha > 0) {
+                            this.alpha -= 0.05;
+                        }
+                        else if (spark === 2 && this.alpha < 1) {
+                            this.alpha += 0.05;
+                        }
+                    }
+                    getNewCoordinates() {
+                        this.timePassed += this.speed;
+                        return {
+                            x: Math.sin(this.timePassed) * this.orbit.radius + this.orbit.cords.x,
+                            y: Math.cos(this.timePassed) * this.orbit.radius + this.orbit.cords.y
+                        };
+                    }
+                }
+                class StarsRenderer {
+                    constructor(
+                    /* Defaults do not modify, check the 2nd last line */
+                    canvasName = 'canvas', hue = 217, speedFactor = 5e4, starCount = 1400) {
+                        this.canvasName = canvasName;
+                        this.hue = hue;
+                        this.speedFactor = speedFactor;
+                        this.starCount = starCount;
+                        this._stars = [];
+                        let canvas = document.getElementById(canvasName);
+                        this.height = canvas.height = window.innerHeight;
+                        this.width = canvas.width = window.innerWidth;
+                        this._ctx = canvas.getContext('2d');
+                        //#region Cache Gradient
+                        this._canvas2 = document.createElement(canvasName);
+                        const factor = this._canvas2.width / 2;
+                        let ctx2 = this._canvas2.getContext('2d');
+                        let gradient2 = ctx2.createRadialGradient(factor, factor, 0, factor, factor, factor);
+                        gradient2.addColorStop(0.025, '#fff');
+                        gradient2.addColorStop(0.1, `hsl(${this.hue}, 61%,33%)`);
+                        gradient2.addColorStop(0.25, `hsl(${this.hue}, 64%,6%)`);
+                        gradient2.addColorStop(1, 'transparent');
+                        ctx2.fillStyle = gradient2;
+                        ctx2.beginPath();
+                        ctx2.arc(factor, factor, factor, 0, Math.PI * 2);
+                        ctx2.fill();
+                        //#endregion
+                        //Generate Stars
+                        for (let i = 0; i < this.starCount; i++) {
+                            this._stars.push(new Star(this.width, this.height, this.starCount, this.speedFactor));
+                        }
+                    }
+                    DrawStars() {
+                        for (let i = 0; i < this.starCount; i++) {
+                            this._ctx.globalAlpha = this._stars[i].alpha;
+                            let starCoordinates = this._stars[i].getNewCoordinates();
+                            this._ctx.drawImage(this._canvas2, starCoordinates.x - this._stars[i].radius / 2, starCoordinates.y - this._stars[i].radius / 2, this._stars[i].radius, this._stars[i].radius);
+                        }
+                    }
+                    DrawFrame() {
+                        this._ctx.globalCompositeOperation = 'source-over';
+                        this._ctx.globalAlpha = 0.8;
+                        this._ctx.fillStyle = `hsla(${this.hue}, 64%,6%,1)`;
+                        this._ctx.fillRect(0, 0, this.width, this.height);
+                        this._ctx.globalCompositeOperation = 'lighter';
+                        this.DrawStars();
+                    }
+                }
+                //Animation Function
+                function animations() {
+                    starsRenderer.DrawFrame();
+                    window.requestAnimationFrame(animations);
+                }
+                /* Supported Parameters
+                canvasName : string,
+                hue :number,
+                speedFactor: number,
+                starCount: number
+                */
+                var starsRenderer = new StarsRenderer('canvas', 217, 5e4, 1400);
+                //Code to intialize the animation
+                animations();
+            </script> -->
+
+            <div id="star">
+                <div class="night">
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                    <div class="shooting_star"></div>
+                  </div>
+            </div>
+            <div class="ring">
+                <span></span>
+            </div>
+            <div class="ring2">
+                <span></span>
+            </div>
+            <div id="B_text"><img src="BM_img/M_text.png"></div>
+            <div id="B_chr">
+                <img id="B_cha" src="BM_img/M_cha.png">
+                <img id="B_cha_bac" src="BM_img/M_cha_bac.png">
+            </div>
+            <div id="B_impact_T">
+                <div id="B_impact_TL"><img src="BM_img/M_impact_T_L.png"></div>
+                <div id="B_impact_TR"><img src="BM_img/M_impact_T_R.png"></div>
+            </div>
+            <div id="B_impact_B">
+                <div id="B_impact_L"><img src="BM_img/M_impact_B_L.png"></div>
+                <div id="B_impact_L2"><img src="BM_img/M_impact_B_L.png"></div>
+                <div id="B_impact_R"><img src="BM_img/M_impact_B_R.png"></div>
+                <div id="B_impact_R2"><img src="BM_img/M_impact_B_R.png"></div>
+                <div id="B_impact_W"><img src="BM_img/M_impact_W.png"></div>
+            </div>
+            <div id="B_Left_N">
+                <div id="B_name"><img src="BM_img/M_name.png"></div>
+                <iframe width="300" height="50" src="https://www.youtube.com/embed/ijG-LwBkG_0?si=TazMHDUmSXklKqOm" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+                <div id="B_Left_Bo">
+                    <ul id="B_box_contain">
+                        <li class="B_boxs"></li>
+                        <li class="B_boxs"></li>
+                        <li class="B_boxs"></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="B_right">
+                <div id="B_R_box">
+                    
+                </div>
+            </div>
+            
+        </section>
+
+    </div>
+</body>
+</html>
